@@ -1,1 +1,2 @@
-1r4v5u4(1r2t)
+p q r s t
+p&q|!(r|s|!(t&r))

@@ -1,1 +1,2 @@
-1r3s5v2(1r2t)
+A B c d
+c|!(d|A&B)
