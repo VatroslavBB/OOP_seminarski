@@ -36,7 +36,6 @@ def NextAllowed(prev, vars):
 	return sieved
 
 
-
 class Formula:
 
 	def __init__(self, sentence, variables):
@@ -45,55 +44,56 @@ class Formula:
 		self.valid = self.CheckVars() and self.CheckIfValid()
 		self.size = NumberOfVars(self.variables)
 		self.truthtable = self.CalcTT()
+		self.veitch = self.CalcVeitch()
+		self.minimal = self.CalcMinimal()
 
 		
 	def CheckVars(self):
 		for V in self.variables:
 			if not V.isalpha():
 				return False
-		return True
+		return len(self.variables) < 6 and len(self.variables) > 0
 
 
 	def CheckIfValid(self):
+		if self.CheckVars() == True:
+			allowed = []
+			for var in self.variables:
+				allowed.append(var)
+			allowed.append('!')
+			allowed.append('(')
 
-		allowed = []
-		for var in self.variables:
-			allowed.append(var)
-		allowed.append('!')
-		allowed.append('(')
+			char = ' '
 
-		char = ' '
+			ParentOpen = 0
+			ParentOpened = False
 
-		ParentOpen = 0
-		ParentOpened = False
+			lenSentence = len(self.sentence)
 
-		lenSentence = len(self.sentence)
+			for i in range(lenSentence):
+				char = self.sentence[i]
 
-		for i in range(lenSentence):
-			char = self.sentence[i]
+				if not (IsOperator(char) or IsVar(char, self.variables) or IsParent(char)):
+					return False
+				
+				if char not in allowed:
+					return False
 
-			if not (IsOperator(char) or IsVar(char, self.variables) or IsParent(char)):
-				return False
-			
-			if char not in allowed:
-				return False
+				ParentOpen += (char == '(') - (char == ')')
+				ParentOpened = (ParentOpen > 0)
 
-			ParentOpen += (char == '(') - (char == ')')
-			ParentOpened = (ParentOpen > 0)
+				allowed = NextAllowed(char, self.variables)
 
-			allowed = NextAllowed(char, self.variables)
+				if ParentOpen != 0 and ParentOpened == True and (IsVar(char, self.variables) or char == ')'):
+					allowed.append(')')
 
-			if ParentOpen != 0 and ParentOpened == True and (IsVar(char, self.variables) or char == ')'):
-				allowed.append(')')
-
-		return ParentOpen == 0 and ParentOpened == False
+			return ParentOpen == 0 and ParentOpened == False
+		return False
 
 
 	def CalcTT(self):
 		sol = []
-		if self.size < 6 and self.valid == True:
-
-			#nes nevalja sa negacijon triba popravit
+		if self.size > 0 and self.size < 6 and self.valid == True:
 
 			func = self.sentence.replace("!", " not ")
 			func = func.replace("&", " and ")
@@ -109,41 +109,46 @@ class Formula:
 					fedUp = True
 					break
 
+			#COMBINATIONS
 			for i in range(2 ** self.size):
 				codeWord = [(i >> j) & 1 for j in range(len(self.variables) - 1, -1, -1)]
 				
 				funcForThis = func
 
-				S = []
-
 				if fedUp == True:
-					#dio kad char moze bit dio operatora neradi
-					#
-					# for i in range(len(self.variables)):
-					# 	for j in range(len(funcForThis)):
-					# 		passed = False
-					# 		try:
-					# 			if funcForThis[j-1] in " ()":
-					# 				passed = True
-					# 		finally:
-					# 			break
-					# 		try:
-					# 			if funcForThis[j+1] in " ()" and passed == True:
-					# 				funcForThis = funcForThis[:j] + str(codeWord[i]) + funcForThis[j+1:]
-					# 		finally:
-					# 			break
-					
-					return sol
+					#brine o prvom i zadnjom charu u funkciji
+					for j in range(len(self.variables)):
+						if funcForThis[0] == self.variables[j]:
+							funcForThis = str(codeWord[j]) + funcForThis[1:]
+						if funcForThis[-1] == self.variables[j]:
+							funcForThis = funcForThis[:-1] + str(codeWord[j])
 
+					#racuna za ostale charove
+					for j in range(1, len(funcForThis) - 1, 1):
+						for k in range(len(self.variables)):
+							if funcForThis[j] == self.variables[k]:
+								if funcForThis[j-1] in " ()" and funcForThis[j+1] in " ()":
+									funcForThis = funcForThis[:j] + str(codeWord[k]) + funcForThis[j+1:]
 				else:
-					for i in range(len(self.variables)):
-						funcForThis = funcForThis.replace(self.variables[i], str(codeWord[i]))
+					for j in range(len(self.variables)):
+						funcForThis = funcForThis.replace(self.variables[j], str(codeWord[j]))
 				
 				sol.append(list(codeWord) + list(bin(eval(funcForThis)))[2:])
 
-			else:
-				pass
+		return sol
 
+
+	def CalcVeitch(self):
+		sol = []
+		if self.size > 0 and self.size < 6 and self.valid == True:
+			return
+		return sol
+
+
+	def CalcMinimal(self):
+		sol = ""
+		if self.size > 0 and self.size < 6 and self.valid == True:
+			return
 		return sol
 
 
