@@ -6,7 +6,7 @@ from AppClass import*
 MinimizedUsed = False
 TruthTableUsed = False
 
-function = Formula("a", "a")
+function = Formula("", "")
 
 
 def ResetGlobals():
@@ -15,7 +15,8 @@ def ResetGlobals():
 	TruthTableUsed = False
 	MinimizedUsed = False
 
-def BackToBeginning(window, frame1, frame2):
+
+def BackToBeginning(window, frame1, frame2, logo):
 	frame1.destroy()
 	frame2.destroy()
 
@@ -24,9 +25,12 @@ def BackToBeginning(window, frame1, frame2):
 	frame1 = tk.Frame(window, bd = 1, relief = "sunken")
 	choice = tk.IntVar(value = -1)
 
+	logoLbl = tk.Label(frame1, image = logo)
+	logoLbl.pack(anchor = "nw", padx = 20)
+
 	ManualBtn = tk.Radiobutton(frame1, text = "Manualan unos", value = -1, variable = choice)
 	FromFileBtn = tk.Radiobutton(frame1, text = "Unos iz datoteke", value = 1, variable = choice)
-	EnterBtn = tk.Button(frame1, text = "Zaključaj odabir", command = lambda: InputMethod(choice.get(), window, frame1))
+	EnterBtn = tk.Button(frame1, text = "Zaključaj odabir", command = lambda: InputMethod(choice.get(), window, frame1, logo))
 
 	ManualBtn.pack(anchor = "center", padx = 20, pady = 10)
 	FromFileBtn.pack(anchor = "center", padx = 20, pady = 10)
@@ -86,10 +90,6 @@ def ShowTruthTable(expr, frame):
 		return
 
 
-def ShowVeitchDiagram(expr, frame):
-	return
-
-
 def EnterFunction(FuncEntry, VarsEntry, frame):
 	global function
 
@@ -103,16 +103,19 @@ def EnterFunction(FuncEntry, VarsEntry, frame):
 		return
 
 
-def InputMethod(c, window, frame):
+def InputMethod(c, window, frame, logo):
 	if c == 1:
-		OpenFile(window, frame)
+		OpenFile(window, frame, logo)
 	else:
-		ManualInput(window, frame)
+		ManualInput(window, frame, logo)
 
-def ManualInput(window, frame):
+def ManualInput(window, frame, logo):
 	global function
 
 	Clear(frame)
+
+	logoLbl = tk.Label(frame, image = logo)
+	logoLbl.pack(anchor = "nw", padx = 20)
 
 	CalcFrame = tk.Frame(window, bd = 1, relief = "sunken")
 	CalcFrame.pack(side = "left", fill = "both", expand = True)
@@ -132,16 +135,14 @@ def ManualInput(window, frame):
 	EnterFunctionBtn = tk.Button(frame, text = "Unesi", command = lambda: EnterFunction(FunctionEntry, VarsEntry, CalcFrame))
 	MinimizeBtn = tk.Button(frame, text = "Minimizirana funkcija", command  = lambda: ShowMinimized(CalcFrame, function))
 	ShowTruthBtn = tk.Button(frame, text = "Tablica istine", command = lambda: ShowTruthTable(function, CalcFrame))
-	ShowVeitchBtn = tk.Button(frame, text = "Veitchev diagram")
 	ClearBtn = tk.Button(frame, text = "Brisanje", command = lambda: Clear(CalcFrame, remain = [FunctionLbl, FunctionEntry, VarsEntry, VarsLbl, FuncLbl]))
 	SaveBtn = tk.Button(frame, text = "Spremi")
 	SaveAsBtn = tk.Button(frame, text = "Spremi kao")
-	BackBtn = tk.Button(frame, text = "Natrag", command = lambda: BackToBeginning(window, frame, CalcFrame))
+	BackBtn = tk.Button(frame, text = "Natrag", command = lambda: BackToBeginning(window, frame, CalcFrame, logo))
 
 	EnterFunctionBtn.pack(anchor = "w", padx = 20, pady = 20)
 	MinimizeBtn.pack(anchor = "w", padx = 20, pady = 20)
 	ShowTruthBtn.pack(anchor = "w", padx = 20, pady = 20)
-	ShowVeitchBtn.pack(anchor = "w", padx = 20, pady = 20)
 	ClearBtn.pack(anchor = "w", padx = 20, pady = 20)
 	FunctionLbl.pack(anchor = "center", padx = 20, pady = 20)
 	BackBtn.pack(anchor = "w", padx = 20, pady = 20)
@@ -149,16 +150,18 @@ def ManualInput(window, frame):
 	SaveAsBtn.pack(anchor = "w", padx = 20, pady = 20)
 
 
-def OpenFile(window, frame):
+def OpenFile(window, frame, logo):
 	#brisi toolbar
 	Clear(frame)
+
+	logoLbl = tk.Label(frame, image = logo)
+	logoLbl.pack(anchor = "nw", padx = 20)
 
 	CalcFrame = tk.Frame(window, bd = 1, relief = "sunken")
 	CalcFrame.pack(side = "left", fill = "both", expand = True)
 
 	#biraj file
 	name = filedialog.askopenfilename(title = "Odaberite tekstualnu datoteku", filetypes = [("text files", "*.txt")])
-	print(name)
 
 	if name == "":
 		return BackToBeginning(window, frame, CalcFrame)
@@ -176,13 +179,12 @@ def OpenFile(window, frame):
 
 	MinimizeBtn = tk.Button(frame, text = "Minimizirana funkcija", command = lambda: ShowMinimized(CalcFrame, expr))
 	ShowTruthBtn = tk.Button(frame, text = "Tablica istine", command = lambda: ShowTruthTable(expr, CalcFrame))
-	ShowVeitchBtn = tk.Button(frame, text = "Veitchev diagram", command = lambda: ShowVeitchDiagram(expr, CalcFrame))
 	ClearBtn = tk.Button(frame, text = "Brisanje", command = lambda: Clear(CalcFrame, remain = [FunctionLbl]))
-	BackBtn = tk.Button(frame, text = "Natrag", command = lambda: BackToBeginning(window, frame, CalcFrame))
+	BackBtn = tk.Button(frame, text = "Natrag", command = lambda: BackToBeginning(window, frame, CalcFrame, logo))
+
 
 	MinimizeBtn.pack(anchor = "w", padx = 20, pady = 20)
 	ShowTruthBtn.pack(anchor = "w", padx = 20, pady = 20)
-	ShowVeitchBtn.pack(anchor = "w", padx = 20, pady = 20)
 	ClearBtn.pack(anchor = "w", padx = 20, pady = 20)
 	FunctionLbl.pack(anchor = "center", padx = 20, pady = 20)
 	BackBtn.pack(anchor = "w", padx = 20, pady = 20)

@@ -255,6 +255,8 @@ class Formula:
 						RM.add(m)
 				restMinterms = RM
 
+			self.veitch = EPI
+
 			for epi in EPI:
 				for i in range(self.size):
 					if epi[i] == '1':
