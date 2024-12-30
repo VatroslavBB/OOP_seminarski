@@ -5,6 +5,7 @@ from AppClass import*
 
 MinimizedUsed = False
 TruthTableUsed = False
+NewFile = ""
 
 function = Formula("", "")
 
@@ -99,8 +100,38 @@ def EnterFunction(FuncEntry, VarsEntry, frame):
 		messagebox.showerror("Krivo", "Varijable je nemoguce procitati")
 	elif function.valid == False:
 		messagebox.showerror("Krivo", "Recenica nije sintakticki ispravna")
+	return
+
+def Save(expr):
+	global NewFile
+	if NewFile != "":
+		with open(NewFile, "w") as file:
+			choice = True
+			if expr.valid == False:
+				choice = messagebox.askyesno("Nevalja funkcija", "Zelite li spremiti neispravnu funkciju")
+			if choice == True:
+				file.write(expr.variables + "\n")
+				file.write(expr.sentence)
+		if choice == True:
+			messagebox.showinfo("Spremi datoteku", f"Datoteka spremljena na {NewFile}")
 	else:
-		return
+		SaveAs(expr)
+
+
+def SaveAs(expr):
+	global NewFile
+	NewFile = filedialog.asksaveasfilename(defaultextension = ".txt",
+											filetypes = [("Tekstualne datoteke", "*.txt")])
+	if NewFile:
+		with open(NewFile, "w") as file:
+			choice = True
+			if expr.valid == False:
+				choice = messagebox.askyesno("Nevalja funkcija", "Zelite li spremiti neispravnu funkciju")
+			if choice == True:
+				file.write(expr.variables + "\n")
+				file.write(expr.sentence)
+		if choice == True:
+			messagebox.showinfo("Spremi datoteku kao", f"Datoteka spremljena na {NewFile}")
 
 
 def InputMethod(c, window, frame, logo):
@@ -108,6 +139,7 @@ def InputMethod(c, window, frame, logo):
 		OpenFile(window, frame, logo)
 	else:
 		ManualInput(window, frame, logo)
+
 
 def ManualInput(window, frame, logo):
 	global function
@@ -136,9 +168,18 @@ def ManualInput(window, frame, logo):
 	MinimizeBtn = tk.Button(frame, text = "Minimizirana funkcija", command  = lambda: ShowMinimized(CalcFrame, function))
 	ShowTruthBtn = tk.Button(frame, text = "Tablica istine", command = lambda: ShowTruthTable(function, CalcFrame))
 	ClearBtn = tk.Button(frame, text = "Brisanje", command = lambda: Clear(CalcFrame, remain = [FunctionLbl, FunctionEntry, VarsEntry, VarsLbl, FuncLbl]))
-	SaveBtn = tk.Button(frame, text = "Spremi")
-	SaveAsBtn = tk.Button(frame, text = "Spremi kao")
+	SaveBtn = tk.Button(frame, text = "Spremi", command = lambda: Save(function))
+	SaveAsBtn = tk.Button(frame, text = "Spremi kao", command = lambda: SaveAs(function))
 	BackBtn = tk.Button(frame, text = "Natrag", command = lambda: BackToBeginning(window, frame, CalcFrame, logo))
+
+	# print(function.valid)
+
+	# if function.valid == False:
+	# 	SaveBtn.config(state = "disabled")
+	# 	SaveAsBtn.config(state = "disabled")
+	# else:
+	# 	SaveBtn.config(state = "normal")
+	# 	SaveAsBtn.config(state = "normal")
 
 	EnterFunctionBtn.pack(anchor = "w", padx = 20, pady = 20)
 	MinimizeBtn.pack(anchor = "w", padx = 20, pady = 20)
@@ -190,7 +231,7 @@ def OpenFile(window, frame, logo):
 	BackBtn.pack(anchor = "w", padx = 20, pady = 20)
 
 def Help():
-	messagebox.showinfo("Help", "Stisci botune pas vidit")
+	messagebox.showinfo("Help", "Pritiskom na opciju manualnog unosa mozete manualno unijeti booleovu funkciju, a opcijom citanja iz datoteke booleova funkcija se procita iz odabrane datoteke")
 
 def About():
 	messagebox.showinfo("About", "Seminarski rad iz kolegija OOP\nnapravio Vatroslav Bočkaj Bundara\nversion 1.0.0")

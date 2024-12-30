@@ -93,7 +93,7 @@ class Formula:
 
 
 	def CheckIfValid(self):
-		if self.sentence == "!":
+		if self.sentence == "!" or self.sentence == "":
 			return False
 		if self.CheckVars() == True:
 			allowed = []
@@ -255,8 +255,6 @@ class Formula:
 						RM.add(m)
 				restMinterms = RM
 
-			self.veitch = EPI
-
 			for epi in EPI:
 				for i in range(self.size):
 					if epi[i] == '1':
@@ -274,12 +272,12 @@ class Formula:
 
 
 
-INPUT = Formula("A&B|C&!D&A|!B&A&C|!A&B&C", "ABCD")
-
-
+# INPUT = Formula("A&B|C&!D&A|!B&A&C|!A&B&C", "ABCD")
+# 
+# 
 # for row in INPUT.truthtable:
 # 	print(*row)
-
+# 
 # print(INPUT.minimal)
 
 
