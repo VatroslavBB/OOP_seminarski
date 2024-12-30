@@ -1,16 +1,5 @@
 # OOP_seminarski
 Seminarski rad iz kolegija Objektno orijentirano programiranje
 
-Features:
+Omogucava unosenje booleovih funkcija manualno ili citanjem iz datoteke
 
-    Manualno unosenje booleove funkcije
-
-    Open File
-    New File
-    Save File
-    Save File As
-    
-    Exit
-    
-    Help
-    About

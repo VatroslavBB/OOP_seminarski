@@ -1,6 +1,6 @@
 
 from MenuLogic import *
-
+from AppClass import *
 
 MainWindow = tk.Tk()
 MainWindow.title("TruthFinder")
