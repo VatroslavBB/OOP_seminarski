@@ -1,4 +1,5 @@
 
+#funkcije za validiranje sintakse inputa
 
 def NumberOfVars(line):
 	return len(line)
@@ -36,6 +37,42 @@ def NextAllowed(prev, vars):
 	return sieved
 
 
+#funkcije za racunanje minimalne funkcije
+
+def NumOfOnes(codeWord):
+	cnt = 0
+	for bit in codeWord:
+		if bit == '1':
+			cnt += 1
+	return cnt
+
+
+def CheckDiff(m1, m2):
+	diff = 0
+	for i in range(len(m1)):
+		if m1[i] != m2[i]:
+			diff += 1
+	return diff
+
+
+def CombineMinterms(m1, m2):
+	combined = ""
+	if CheckDiff(m1, m2) == 1:
+		for i in range(len(m1)):
+			if m1[i] == m2[i]:
+				combined += m1[i]
+			else:
+				combined += "R"
+	return combined
+
+
+def CheckingImplicants(epi, m):
+	for i in range(len(m)):
+		if not (epi[i] == m[i] or epi[i] == "R"):
+			return False
+	return True
+
+
 class Formula:
 
 	def __init__(self, sentence, variables):
@@ -44,7 +81,7 @@ class Formula:
 		self.valid = self.CheckVars() and self.CheckIfValid()
 		self.size = NumberOfVars(self.variables)
 		self.truthtable = self.CalcTT()
-		self.veitch = self.CalcVeitch()
+		# self.veitch = self.CalcVeitch()
 		self.minimal = self.CalcMinimal()
 
 		
@@ -56,6 +93,8 @@ class Formula:
 
 
 	def CheckIfValid(self):
+		if self.sentence == "!":
+			return False
 		if self.CheckVars() == True:
 			allowed = []
 			for var in self.variables:
@@ -109,14 +148,14 @@ class Formula:
 					fedUp = True
 					break
 
-			#COMBINATIONS
+			#kreiranje kodnih rici
 			for i in range(2 ** self.size):
 				codeWord = [(i >> j) & 1 for j in range(len(self.variables) - 1, -1, -1)]
 				
 				funcForThis = func
 
 				if fedUp == True:
-					#brine o prvom i zadnjom charu u funkciji
+					#brine o prvom i zadnjen charu u funkciji
 					for j in range(len(self.variables)):
 						if funcForThis[0] == self.variables[j]:
 							funcForThis = str(codeWord[j]) + funcForThis[1:]
@@ -138,28 +177,108 @@ class Formula:
 		return sol
 
 
-	def CalcVeitch(self):
-		sol = []
-		if self.size > 0 and self.size < 6 and self.valid == True:
-			return
-		return sol
+	# def CalcVeitch(self):
+	# 	sol = {}
+	# 	if self.size > 0 and self.size < 6 and self.valid == True:
+
+	# 		varSize = len(self.variables)
+	# 		for v in self.variables:
+	# 			sol[v] = []
+	# 			sol["!" + v] = []
+
+	# 		for i in range(varSize):
+	# 			step = 2 ** (varSize - i)
+	# 			currLimit = step
+	# 			neg = True
+	# 			for j in range(len(self.truthtable) - 1):
+	# 				if j % step == 0:
+	# 					neg = False
+	# 				if j % step == step / 2:
+	# 					neg = True
+
+	# 				if neg == True and self.truthtable[j + 1][-1] == "1":
+	# 					sol[self.variables[i]] += [j]
+	# 				if neg == False and self.truthtable[j + 1][-1] == "1":
+	# 					sol["!" + self.variables[i]] += [j]
+	# 	return sol
 
 
 	def CalcMinimal(self):
+		#implementacija Quine-Mcluskey metode
 		sol = ""
 		if self.size > 0 and self.size < 6 and self.valid == True:
-			return
-		return sol
+			minterms = []
+			for row in self.truthtable:
+				if row[-1] == '1':
+					minterms.append(''.join(map(str, row[:-1])))
+
+			groups = {}
+			for m in minterms:
+				groups.setdefault(NumOfOnes(m), []).append(m)
+
+			PI = set()
+			EPI = set()
+			ALL = set(minterms)
+
+			while groups:
+				new = {}
+				used = set()
+				for G in sorted(groups):
+					if G + 1 in groups:
+						for m1 in groups[G]:
+							for m2 in groups[G + 1]:
+								combined = CombineMinterms(m1, m2)
+								if combined != "":
+									new.setdefault(NumOfOnes(combined), []).append(combined)
+									used.add(m1)
+									used.add(m2)
+									ALL.add(combined)
+				for G in groups:
+					for m in groups[G]:
+						if m not in used:
+							PI.add(m)
+				groups = {k: list(set(v)) for k, v in new.items()}
+
+			restMinterms = set(minterms)
+			while restMinterms:
+				C = {}
+				for expr in PI:
+					C[expr] = 0
+					for m in restMinterms:
+						if CheckingImplicants(expr, m) == True:
+							C[expr] += 1
+				epi = max(C, key = C.get)
+				EPI.add(epi)
+				RM = set()
+				for m in restMinterms:
+					if CheckingImplicants(epi, m) == False:
+						RM.add(m)
+				restMinterms = RM
+
+			for epi in EPI:
+				for i in range(self.size):
+					if epi[i] == '1':
+						sol += self.variables[i]
+					elif epi[i] == '0':
+						sol += "!" + self.variables[i]
+					if epi[i] != "R":
+						sol += "&"
+
+				sol = sol[:-1]
+				sol += " | "
+
+		return sol[:-3]
 
 
 
 
-# INPUT = Formula("p&q|(p|s|!(q&q))", "p q s")
+INPUT = Formula("A&B|C&!D&A|!B&A&C|!A&B&C", "ABCD")
 
 
-# for r in INPUT.truthtable:
-# 	print(*r)
+# for row in INPUT.truthtable:
+# 	print(*row)
 
+# print(INPUT.minimal)
 
 
 

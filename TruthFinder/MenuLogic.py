@@ -47,9 +47,16 @@ def Clear(frame, remain = []):
 			widget.destroy()
 
 
+def MaximizeWindow(window):
+	window.attributes("-fullscreen", True)
+
+def MinimizeWindow(window):
+	window.attributes("-fullscreen", False)
+	window.geometry("300x400")
+
 def ShowMinimized(frame, expr):
 	global MinimizedUsed
-	MinimizedLbl = tk.Label(frame, text = "Minimizirana funkcija: " + expr.sentence)
+	MinimizedLbl = tk.Label(frame, text = "Minimizirana funkcija: " + expr.minimal)
 	if MinimizedUsed == True:
 		return
 	else:
@@ -68,12 +75,12 @@ def ShowTruthTable(expr, frame):
 	else:
 		TruthTableUsed = True
 
-		for H in expr.truthtable[0]:
-			table.heading(H, text = H)
-			table.column(H, width = 40, anchor = "center")
+		for heading in expr.truthtable[0]:
+			table.heading(heading, text = heading)
+			table.column(heading, width = 40, anchor = "center")
 
-		for R in expr.truthtable[1:]:
-			table.insert('', "end", values = R)
+		for row in expr.truthtable[1:]:
+			table.insert('', "end", values = row)
 
 		table.pack(fill = "both")
 		return
@@ -82,16 +89,12 @@ def ShowTruthTable(expr, frame):
 def ShowVeitchDiagram(expr, frame):
 	return
 
-def MaximizeWindow(window):
-	width = window.winfo_screenwidth()
-	height = window.winfo_screenheight()
-	window.geometry(str(width) + "x" + str(height))
-
 
 def EnterFunction(FuncEntry, VarsEntry, frame):
 	global function
 
 	function = Formula(FuncEntry.get(), VarsEntry.get())
+
 	if function.CheckVars() == False:
 		messagebox.showerror("Krivo", "Varijable je nemoguce procitati")
 	elif function.valid == False:
@@ -127,10 +130,10 @@ def ManualInput(window, frame):
 	FunctionEntry.pack(anchor = "center", padx = 20, pady = 5)
 
 	EnterFunctionBtn = tk.Button(frame, text = "Unesi", command = lambda: EnterFunction(FunctionEntry, VarsEntry, CalcFrame))
-	MinimizeBtn = tk.Button(frame, text = "Minimizirana funkcija")
+	MinimizeBtn = tk.Button(frame, text = "Minimizirana funkcija", command  = lambda: ShowMinimized(CalcFrame, function))
 	ShowTruthBtn = tk.Button(frame, text = "Tablica istine", command = lambda: ShowTruthTable(function, CalcFrame))
 	ShowVeitchBtn = tk.Button(frame, text = "Veitchev diagram")
-	ClearBtn = tk.Button(frame, text = "Brisanje", command = lambda: Clear(CalcFrame, remain = [FunctionLbl, FunctionEntry, VarsEntry]))
+	ClearBtn = tk.Button(frame, text = "Brisanje", command = lambda: Clear(CalcFrame, remain = [FunctionLbl, FunctionEntry, VarsEntry, VarsLbl, FuncLbl]))
 	SaveBtn = tk.Button(frame, text = "Spremi")
 	SaveAsBtn = tk.Button(frame, text = "Spremi kao")
 	BackBtn = tk.Button(frame, text = "Natrag", command = lambda: BackToBeginning(window, frame, CalcFrame))
@@ -142,25 +145,32 @@ def ManualInput(window, frame):
 	ClearBtn.pack(anchor = "w", padx = 20, pady = 20)
 	FunctionLbl.pack(anchor = "center", padx = 20, pady = 20)
 	BackBtn.pack(anchor = "w", padx = 20, pady = 20)
+	SaveBtn.pack(anchor = "w", padx = 20, pady = 20)
+	SaveAsBtn.pack(anchor = "w", padx = 20, pady = 20)
 
 
 def OpenFile(window, frame):
-	#DELETE TOOLBAR WIDGETS
+	#brisi toolbar
 	Clear(frame)
 
-	#SELECTION OF A FILE
-	name = filedialog.askopenfilename(title = "Odaberite tekstualnu datoteku", filetypes = [("text files", "*.txt")])
+	CalcFrame = tk.Frame(window, bd = 1, relief = "sunken")
+	CalcFrame.pack(side = "left", fill = "both", expand = True)
 
-	#INTERPRET FROM FILE
+	#biraj file
+	name = filedialog.askopenfilename(title = "Odaberite tekstualnu datoteku", filetypes = [("text files", "*.txt")])
+	print(name)
+
+	if name == "":
+		return BackToBeginning(window, frame, CalcFrame)
+
+
+	#procitaj file
 	with open(name, "r") as file:
 		variables = file.readline()
 		function = file.readline()
 
 
 	expr = Formula(function, variables[:-1])
-
-	CalcFrame = tk.Frame(window, bd = 1, relief = "sunken")
-	CalcFrame.pack(side = "left", fill = "both", expand = True)
 
 	FunctionLbl = tk.Label(CalcFrame, text = "Booleova funkcija u fileu je\nf(" + expr.variables + ") = " + expr.sentence)
 
@@ -188,30 +198,30 @@ def CreateMenuBar(window, file = False, exit = False, win = False, info = False)
 	NewMenuBar = tk.Menu(window)
 	window.config(menu = NewMenuBar)
 
-	#MENU BAR FILE
+	#file
 	if file == True:
 		FileMenu = tk.Menu(NewMenuBar, tearoff = 0)
 		FileMenu.add_command(label = "Save", command = lambda: SaveFile())
 		FileMenu.add_command(label = "Save as", command = lambda: SaveFileAs())
 		NewMenuBar.add_cascade(label = "File", menu = FileMenu)
 
-	#MENU BAR EXIT
+	#exit
 	if exit == True:
 		ExitMenu = tk.Menu(NewMenuBar, tearoff = 0)
 		ExitMenu.add_command(label = "Exit", command = window.destroy)
 		NewMenuBar.add_cascade(label = "Exit", menu = ExitMenu)
 
-	#MENU BAR INFO
+	#info
 	if info == True:
 		InfoMenu = tk.Menu(NewMenuBar, tearoff = 0)
 		InfoMenu.add_command(label = "Help", command = Help)
 		InfoMenu.add_command(label = "About", command = About)
 		NewMenuBar.add_cascade(label = "Info", menu = InfoMenu)
 
-	#MENU BAR WINDOW
+	#window
 	if win == True:
 		WindowMenu = tk.Menu(NewMenuBar, tearoff = 0)
-		WindowMenu.add_command(label = "Minimize", command = lambda: window.geometry("300x300"))
+		WindowMenu.add_command(label = "Minimize", command = lambda: MinimizeWindow(window))
 		WindowMenu.add_command(label = "Maximize", command = lambda: MaximizeWindow(window))
 		NewMenuBar.add_cascade(label = "Window", menu = WindowMenu)
 
