@@ -31,10 +31,12 @@ def BackToBeginning(window, frame1, frame2, logo):
 
 	ManualBtn = tk.Radiobutton(frame1, text = "Manualan unos", value = -1, variable = choice)
 	FromFileBtn = tk.Radiobutton(frame1, text = "Unos iz datoteke", value = 1, variable = choice)
+	#FromTruthTableBtn = tk.Radiobutton(frame1, text = "Unos iz tablice istine", value = 2, variable = choice)
 	EnterBtn = tk.Button(frame1, text = "Zaključaj odabir", command = lambda: InputMethod(choice.get(), window, frame1, logo))
 
 	ManualBtn.pack(anchor = "center", padx = 20, pady = 10)
 	FromFileBtn.pack(anchor = "center", padx = 20, pady = 10)
+	#FromTruthTableBtn.pack(anchor = "center", padx = 20, pady = 10)
 	EnterBtn.pack(anchor = "center", padx = 20, pady = 20)
 	frame1.pack(side = "left", fill = "y")
 
@@ -82,7 +84,7 @@ def ShowTruthTable(expr, frame):
 
 		for heading in expr.truthtable[0]:
 			table.heading(heading, text = heading)
-			table.column(heading, width = 40, anchor = "center")
+			table.column(heading, width = 10, anchor = "center")
 
 		for row in expr.truthtable[1:]:
 			table.insert('', "end", values = row)
@@ -135,6 +137,7 @@ def SaveAs(expr):
 
 
 def InputMethod(c, window, frame, logo):
+	print(c)
 	if c == 1:
 		OpenFile(window, frame, logo)
 	else:
@@ -152,8 +155,6 @@ def ManualInput(window, frame, logo):
 	CalcFrame = tk.Frame(window, bd = 1, relief = "sunken")
 	CalcFrame.pack(side = "left", fill = "both", expand = True)
 
-	FunctionLbl = tk.Label(CalcFrame, text = "Booleova funkcija u fileu je\nf( ) = ")
-
 	VarsLbl = tk.Label(CalcFrame, text = "Ovdje unesite varijable (min. 1, max. 5), dopustena su samo velika i mala slova")
 	FuncLbl = tk.Label(CalcFrame, text = "Ovdje unesite booleovu funkciju\n - negacija '!'\n konjunkcija '&'\n disjunkcija '|'\npisite sve skupa")
 
@@ -167,7 +168,7 @@ def ManualInput(window, frame, logo):
 	EnterFunctionBtn = tk.Button(frame, text = "Unesi", command = lambda: EnterFunction(FunctionEntry, VarsEntry, CalcFrame))
 	MinimizeBtn = tk.Button(frame, text = "Minimizirana funkcija", command  = lambda: ShowMinimized(CalcFrame, function))
 	ShowTruthBtn = tk.Button(frame, text = "Tablica istine", command = lambda: ShowTruthTable(function, CalcFrame))
-	ClearBtn = tk.Button(frame, text = "Brisanje", command = lambda: Clear(CalcFrame, remain = [FunctionLbl, FunctionEntry, VarsEntry, VarsLbl, FuncLbl]))
+	ClearBtn = tk.Button(frame, text = "Brisanje", command = lambda: Clear(CalcFrame, remain = [FunctionEntry, VarsEntry, VarsLbl, FuncLbl]))
 	SaveBtn = tk.Button(frame, text = "Spremi", command = lambda: Save(function))
 	SaveAsBtn = tk.Button(frame, text = "Spremi kao", command = lambda: SaveAs(function))
 	BackBtn = tk.Button(frame, text = "Natrag", command = lambda: BackToBeginning(window, frame, CalcFrame, logo))
@@ -185,7 +186,6 @@ def ManualInput(window, frame, logo):
 	MinimizeBtn.pack(anchor = "w", padx = 20, pady = 20)
 	ShowTruthBtn.pack(anchor = "w", padx = 20, pady = 20)
 	ClearBtn.pack(anchor = "w", padx = 20, pady = 20)
-	FunctionLbl.pack(anchor = "center", padx = 20, pady = 20)
 	BackBtn.pack(anchor = "w", padx = 20, pady = 20)
 	SaveBtn.pack(anchor = "w", padx = 20, pady = 20)
 	SaveAsBtn.pack(anchor = "w", padx = 20, pady = 20)
