@@ -1,5 +1,6 @@
 
 from MenuLogic import *
+import os
 
 MainWindow = tk.Tk()
 MainWindow.title("TruthFinder")
@@ -9,7 +10,7 @@ MainWindow.geometry("800x400")
 ToolBar = tk.Frame(MainWindow, bd = 1, relief = "sunken")
 choice = tk.IntVar(value = -1)
 
-logo = tk.PhotoImage(file = "TTLogo.png")
+logo = tk.PhotoImage(file = os.path.join("/", "Users", "quomod0", "Desktop", "OOP_seminarski", "grafika", "TTLogo.png"))
 logoLbl = tk.Label(ToolBar, image = logo)
 logoLbl.pack(anchor = "nw", padx = 20)
 

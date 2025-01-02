@@ -2,6 +2,7 @@
 import tkinter as tk
 from tkinter import messagebox, filedialog, ttk
 from BooleanFunctionClass import*
+import os
 
 
 def Help():
@@ -16,8 +17,6 @@ def MaximizeWindow(window):
 def MinimizeWindow(window):
 	window.attributes("-fullscreen", False)
 	window.geometry("300x400")
-
-
 
 
 class App:
@@ -43,11 +42,15 @@ class App:
 		self.menubar.add_cascade(label = "Info", menu = self.infomenu)
 		self.menubar.add_cascade(label = "Prozor", menu = self.windowmenu)
 
-
+		#frameovi
 		self.toolbar = tk.Frame(window, bd = 1, relief = "sunken")
 		self.calcScreen = tk.Frame(window, bd = 1, relief = "sunken")
 
 		self.inputChoice = tk.IntVar(value = -1)
+
+		#slika
+		self.logo = tk.PhotoImage(file = os.path.join("/", "Users", "quomod0", "Desktop", "OOP_seminarski", "grafika", "TTLogo.png"))
+		self.logoLbl = tk.Label(self.toolbar, image = self.logo)
 
 		#funkcija u apk
 		self.function = Formula("!x", "x")
@@ -76,7 +79,7 @@ class App:
 		self.enterFuncBtn = tk.Button(self.toolbar, text = "Unesi funkciju", command = lambda: self.EnterFunc())
 		self.minimizeBtn = tk.Button(self.toolbar, text = "Minimiziraj", command = lambda: self.MinimizeFunc())
 		self.truthTableBtn = tk.Button(self.toolbar, text = "Tablica istine", command = lambda: self.TruthTableFunc())
-		self.clearBtn = tk.Button(self.toolbar, text = "Briši", command = lambda: self.Hide(self.calcScreen, show = [self.funcEntry, self.varsEntry, self.funcLbl, self.varsLbl]))
+		self.clearBtn = tk.Button(self.toolbar, text = "Briši", command = lambda: self.Hide(self.calcScreen, show = [self.displayFuncLbl, self.funcEntry, self.varsEntry, self.funcLbl, self.varsLbl]))
 		self.saveBtn = tk.Button(self.toolbar, text = "Spremi", command = lambda: self.Save())
 		self.saveAsBtn = tk.Button(self.toolbar, text = "Spremi kao", command = lambda: self.SaveAs())
 		self.backBtn = tk.Button(self.toolbar, text = "Natrag", command = lambda: self.Back())
@@ -108,13 +111,14 @@ class App:
 
 
 	def Back(self):
-		self.Hide(self.toolbar)
+		self.Hide(self.toolbar, show = [self.logoLbl])
 		self.Hide(self.calcScreen)
 		self.startOption()
 
 
 	def EnterFunc(self):
 		self.function = Formula(self.funcEntry.get(), self.varsEntry.get())
+		self.displayFuncLbl.config(text = "Trenutna funkcija je: f(" + self.function.variables + ") = " + self.function.sentence)
 
 		if self.function.CheckVars() == False:
 			messagebox.showerror("Greška", "Varijable krivo upisane")
@@ -135,6 +139,9 @@ class App:
 		# for row in self.function.TT:
 		# 	print(*row)
 
+		for val in self.truthTable.get_children():
+			self.truthTable.delete(val)
+
 		if self.truthTableUsed == False:
 
 			self.truthTableUsed = True
@@ -152,15 +159,37 @@ class App:
 
 
 	def Save(self):
-		return
+		if self.newFile != "":
+			with open(self.newFile, "w") as file:
+				choice = True
+				if self.function.valid == False:
+					choice = messagebox.askyesno("Pogrešna sintaksa", "Želite li spremiti neispravnu funkciju?")
+				if choice == True:
+					file.write(self.function.variables + "\n")
+					file.write(self.function.sentence)
+					messagebox.showinfo("Spremanje", f"Datoteka spremljena na {self.newFile}")
+		else:
+			self.SaveAs()
 
 
 	def SaveAs(self):
-		return
+		self.newFile = filedialog.asksaveasfilename(defaultextension = ".txt", filetypes = [("tekstualne datoteke", "*.txt")])
+
+		if self.newFile != "":
+			with open(self.newFile, "w") as file:
+				choice = True
+				if self.function.valid == False:
+					choice = messagebox.askyesno("Nevalja funkcija", "Zelite li spremiti neispravnu funkciju")
+				if choice == True:
+					file.write(self.function.variables + "\n")
+					file.write(self.function.sentence)
+					messagebox.showinfo("Spremanje", f"Datoteka spremljena na {self.newFile}")
+		else:
+			messagebox.showerror("Greška u spremanju", "Nedovoljno memorije")
 
 
 	def ManualInput(self):
-		self.Hide(self.toolbar)
+		self.Hide(self.toolbar, show = [self.logoLbl])
 
 		self.varsLbl.pack(anchor = "center", padx = 20, pady = 5)
 		self.varsEntry.pack(anchor = "center", padx = 20, pady = 5)
@@ -176,9 +205,11 @@ class App:
 		self.saveAsBtn.pack(anchor = "w", padx = 20, pady = 20)
 		self.backBtn.pack(anchor = "w", padx = 20, pady = 20)
 
+		self.displayFuncLbl.pack(anchor = "center", padx = 20, pady = 20)
+
 
 	def FileInput(self):
-		self.Hide(self.toolbar)
+		self.Hide(self.toolbar, show = [self.logoLbl])
 
 		self.newFile = filedialog.askopenfilename(title = "Odaberite tekstualnu datoteku", filetypes = [("tekstualne datoteke", "*.txt")])
 
@@ -211,16 +242,17 @@ class App:
 
 
 	def startOption(self):
-		self.Hide(self.toolbar)
+		self.Hide(self.toolbar, show = [self.logoLbl])
 		self.Hide(self.calcScreen)
-
 
 		self.manualBtn = tk.Radiobutton(self.toolbar, text = "Manualan unos", value = 0, variable = self.inputChoice)
 		self.fileBtn = tk.Radiobutton(self.toolbar, text = "Unos iz datoteke", value = 1, variable = self.inputChoice)
 		self.enterBtn = tk.Button(self.toolbar, text = "Zaključaj odabir", command = lambda: self.InputMethod())
 
-		self.manualBtn.pack(anchor = "center", padx = 20)
-		self.fileBtn.pack(anchor = "center", padx = 20)
+		self.logoLbl.pack(anchor = "nw", padx = 20)
+
+		self.manualBtn.pack(anchor = "center", padx = 20, pady = 5)
+		self.fileBtn.pack(anchor = "center", padx = 20, pady = 5)
 		self.enterBtn.pack(anchor = "center", padx = 20, pady = 20)
 		self.toolbar.pack(side = "left", fill = "y")
 
