@@ -259,16 +259,3 @@ class App:
 
 
 
-
-window = tk.Tk()
-
-apk = App(window)
-
-apk.startOption()
-
-window.mainloop()
-
-
-
-
-

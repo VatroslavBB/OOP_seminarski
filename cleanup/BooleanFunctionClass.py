@@ -1,5 +1,6 @@
-
-#funkcije za validiranje sintakse inputa
+#
+# funkcije za validiranje sintakse inputa
+#
 
 def NumberOfVars(line):
 	return len(line)
@@ -37,7 +38,102 @@ def NextAllowed(prev, vars):
 	return sieved
 
 
-#funkcije za racunanje minimalne funkcije
+#
+# funkcije za izradu stabla proračuna
+#
+
+class BoolNode:
+    def __init__(self, value):
+        self.value = value
+        self.left = None
+        self.right = None
+
+
+def FindWeakest(func):
+    scale = {"|": 1, "&": 2, "!": 3}
+    weakest = 5
+    index = -1
+    parentCnt = 0
+    for i in range(len(func)):
+        parentCnt += (func[i] == "(")*1 - (func[i] == ")")*1
+        if parentCnt == 0 and func[i] in scale:
+            if weakest > scale[func[i]]:
+                weakest = scale[func[i]]
+                index = i
+    return index
+
+
+def MakeTree(func):
+    if func.isalnum():
+        return BoolNode(func)
+
+    index = FindWeakest(func)
+    #case sa zagradama
+    if index == -1:
+        return MakeTree(func[1:-1])
+
+    newNode = BoolNode(func[index])
+    if func[index] == "!":
+        newNode.left = None
+    else:
+        newNode.left = MakeTree(func[:index])
+    newNode.right = MakeTree(func[index + 1:])
+
+    return newNode
+
+
+def CalculateFromTree(root):
+	if root == None:
+		return
+
+	if root.left == None and root.right == None:
+		return int(root.value)
+
+	L = CalculateFromTree(root.left)
+	R = CalculateFromTree(root.right)
+
+	if root.value == "&":
+		return int(L and R)
+	elif root.value == "|":
+		return int(L or R)
+	elif root.value == "!":
+		return int(not R)
+
+
+
+#
+# funkcije za kreiranje tablice istine
+#
+
+def MakeTruthTable(func, var):
+	size = len(var)
+	sol = [[]]
+	if size > 0 and size < 6:
+		for v in var:
+			sol[0].append(v)
+		sol[0].append("f(" + var + ")")
+
+		for i in range(2 ** size):
+			combination = [(i >> j) & 1 for j in range(size - 1, -1, -1)]
+
+			F = func
+			for j in range(len(F)):
+				for k in range(size):
+					if F[j] == var[k]:
+						F = F[:j] + str(combination[k]) + F[j + 1:]
+
+			root = MakeTree(F)
+			row = list(combination)
+			row.append(CalculateFromTree(root))
+
+			sol.append(row)
+
+	return sol
+
+
+#
+# funkcije za racunanje minimalne funkcije
+#
 
 def NumOfOnes(codeWord):
 	cnt = 0
@@ -80,7 +176,12 @@ class Formula:
 		self.variables = variables.replace(" ", "")
 		self.valid = self.CheckVars() and self.CheckIfValid()
 		self.size = NumberOfVars(self.variables)
-		self.TT = self.CalcTruthTable()
+		
+		if self.valid == True:
+			self.TT = MakeTruthTable(self.sentence, self.variables)
+		else:
+			self.TT = [[]]
+
 		
 	def CheckVars(self):
 		for V in self.variables:
@@ -127,76 +228,50 @@ class Formula:
 		return False
 
 
-	def CalcTruthTable(self):
-		sol = []
-		if self.size > 0 and self.size < 6 and self.valid == True:
-
-			func = self.sentence.replace("!", " not ")
-			func = func.replace("&", " and ")
-			func = func.replace("|", " or ")
-
-			sol = [list(self.variables) + ["f(...)"]]
-
-			wrongReplace = "andort"
-			fedUp = False
-
-			for V in self.variables:
-				if V in wrongReplace:
-					fedUp = True
-					break
-
-			#kreiranje kodnih rici
-			for i in range(2 ** self.size):
-				codeWord = [(i >> j) & 1 for j in range(len(self.variables) - 1, -1, -1)]
-				
-				funcForThis = func
-
-				if fedUp == True:
-					#brine o prvom i zadnjen charu u funkciji
-					for j in range(len(self.variables)):
-						if funcForThis[0] == self.variables[j]:
-							funcForThis = str(codeWord[j]) + funcForThis[1:]
-						if funcForThis[-1] == self.variables[j]:
-							funcForThis = funcForThis[:-1] + str(codeWord[j])
-
-					#racuna za ostale charove
-					for j in range(1, len(funcForThis) - 1, 1):
-						for k in range(len(self.variables)):
-							if funcForThis[j] == self.variables[k]:
-								if funcForThis[j-1] in " ()" and funcForThis[j+1] in " ()":
-									funcForThis = funcForThis[:j] + str(codeWord[k]) + funcForThis[j+1:]
-				else:
-					for j in range(len(self.variables)):
-						funcForThis = funcForThis.replace(self.variables[j], str(codeWord[j]))
-				
-				sol.append(list(codeWord) + list(bin(eval(funcForThis)))[2:])
-
-		return sol
-
-
-	# def CalcVeitch(self):
-	# 	sol = {}
+	# def CalcTruthTable(self):
+	# 	sol = []
 	# 	if self.size > 0 and self.size < 6 and self.valid == True:
 
-	# 		varSize = len(self.variables)
-	# 		for v in self.variables:
-	# 			sol[v] = []
-	# 			sol["!" + v] = []
+	# 		func = self.sentence.replace("!", " not ")
+	# 		func = func.replace("&", " and ")
+	# 		func = func.replace("|", " or ")
 
-	# 		for i in range(varSize):
-	# 			step = 2 ** (varSize - i)
-	# 			currLimit = step
-	# 			neg = True
-	# 			for j in range(len(self.truthtable) - 1):
-	# 				if j % step == 0:
-	# 					neg = False
-	# 				if j % step == step / 2:
-	# 					neg = True
+	# 		sol = [list(self.variables) + ["f(...)"]]
 
-	# 				if neg == True and self.truthtable[j + 1][-1] == "1":
-	# 					sol[self.variables[i]] += [j]
-	# 				if neg == False and self.truthtable[j + 1][-1] == "1":
-	# 					sol["!" + self.variables[i]] += [j]
+	# 		wrongReplace = "andort"
+	# 		fedUp = False
+
+	# 		for V in self.variables:
+	# 			if V in wrongReplace:
+	# 				fedUp = True
+	# 				break
+
+	# 		#kreiranje kodnih rici
+	# 		for i in range(2 ** self.size):
+	# 			codeWord = [(i >> j) & 1 for j in range(len(self.variables) - 1, -1, -1)]
+				
+	# 			funcForThis = func
+
+	# 			if fedUp == True:
+	# 				#brine o prvom i zadnjen charu u funkciji
+	# 				for j in range(len(self.variables)):
+	# 					if funcForThis[0] == self.variables[j]:
+	# 						funcForThis = str(codeWord[j]) + funcForThis[1:]
+	# 					if funcForThis[-1] == self.variables[j]:
+	# 						funcForThis = funcForThis[:-1] + str(codeWord[j])
+
+	# 				#racuna za ostale charove
+	# 				for j in range(1, len(funcForThis) - 1, 1):
+	# 					for k in range(len(self.variables)):
+	# 						if funcForThis[j] == self.variables[k]:
+	# 							if funcForThis[j-1] in " ()" and funcForThis[j+1] in " ()":
+	# 								funcForThis = funcForThis[:j] + str(codeWord[k]) + funcForThis[j+1:]
+	# 			else:
+	# 				for j in range(len(self.variables)):
+	# 					funcForThis = funcForThis.replace(self.variables[j], str(codeWord[j]))
+				
+	# 			sol.append(list(codeWord) + list(bin(eval(funcForThis)))[2:])
+
 	# 	return sol
 
 
@@ -205,9 +280,8 @@ class Formula:
 		sol = ""
 		if self.size > 0 and self.size < 6 and self.valid == True:
 			minterms = []
-			truthtable = self.CalcTruthTable()
-			for row in truthtable:
-				if row[-1] == '1':
+			for row in self.TT:
+				if row[-1] == 1:
 					minterms.append(''.join(map(str, row[:-1])))
 
 			groups = {}
@@ -255,9 +329,9 @@ class Formula:
 
 			for epi in EPI:
 				for i in range(self.size):
-					if epi[i] == '1':
+					if epi[i] == "1":
 						sol += self.variables[i]
-					elif epi[i] == '0':
+					elif epi[i] == "0":
 						sol += "!" + self.variables[i]
 					if epi[i] != "R":
 						sol += "&"
@@ -270,10 +344,17 @@ class Formula:
 
 
 
-# INPUT = Formula("A&B|C&!D&A|!B&A&C|!A&B&C", "ABCD")
-# 
-# 
-# for row in INPUT.truthtable:
+# INPUT = Formula("p&q|!(r|s|!(t&r))", "pqrst")
+
+# for row in INPUT.TT:
 # 	print(*row)
-# 
-# print(INPUT.minimal)
+
+# for row in INPUT.CalcTruthTable():
+# 	print(*row)
+
+
+
+
+
+
+
