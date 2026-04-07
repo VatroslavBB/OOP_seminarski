@@ -9,7 +9,7 @@ def Help():
 	messagebox.showinfo("Pomoć", "Pritiskom na opciju manualnog unosa mozete manualno unijeti booleovu funkciju, a opcijom čitanja iz datoteke booleova funkcija se pročita iz odabrane datoteke")
 
 def About():
-	messagebox.showinfo("Više o", "Seminarski rad iz kolegija OOP\nnapravio Vatroslav Bočkaj Bundara\nversion 1.1")
+	messagebox.showinfo("Više o", "Seminarski rad iz kolegija OOP\nnapravio Vatroslav Bundara\nversion 1.1")
 
 def MaximizeWindow(window):
 	window.attributes("-fullscreen", True)
@@ -46,23 +46,24 @@ class App:
 		self.toolbar = tk.Frame(window, bd = 1, relief = "sunken")
 		self.calcScreen = tk.Frame(window, bd = 1, relief = "sunken")
 
+		#var za odabir inputa
 		self.inputChoice = tk.IntVar(value = -1)
 
-		#slika
-		self.logo = tk.PhotoImage(file = os.path.join("/", "Users", "quomod0", "Desktop", "OOP_seminarski", "grafika", "TTLogo.png"))
+		#slika/logo
+		self.logo = tk.PhotoImage(file = r"C:\Users\Korisnik\Desktop\OOP_seminarski\grafika\TTLogo.png")
 		self.logoLbl = tk.Label(self.toolbar, image = self.logo)
 
-		#funkcija u apk
+		#booleova funkcija u apk
 		self.function = Formula("!x", "x")
 
-		#stanja
+		#iskoristenost botuna
 		self.truthTableUsed = False
 		self.minimizeUsed = False
 
-		#file
+		#datoteka
 		self.newFile = ""
 
-		#prikaz teksta
+		#tekst
 		self.varsLbl = tk.Label(self.calcScreen, text = "Ovdje unesite varijable (min. 1, max. 5), dopustena su samo velika i mala slova")
 		self.funcLbl = tk.Label(self.calcScreen, text = "Ovdje unesite booleovu funkciju\n - negacija '!'\n - konjunkcija '&'\n - disjunkcija '|'\n - pisite sve skupa")
 		self.minimizeLbl = tk.Label(self.calcScreen, text = "Minimizirana funkcija: " + self.function.CalcMinimal())
@@ -92,16 +93,7 @@ class App:
 		self.truthTableUsed = False
 		self.minimizeUsed = False
 
-
-	# def Clear(self, frame, remain = []):
-	# 	self.Reset()
-
-	# 	for widget in frame.winfo_children():
-	# 		inside = widget in remain
-	# 		if inside == False:
-	# 			widget.destroy()
-
-
+	
 	def Hide(self, frame, show = []):
 		self.Reset()
 
@@ -136,8 +128,6 @@ class App:
 
 
 	def TruthTableFunc(self):
-		# for row in self.function.TT:
-		# 	print(*row)
 
 		for val in self.truthTable.get_children():
 			self.truthTable.delete(val)
